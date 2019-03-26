@@ -19,7 +19,7 @@ S5=tf([1],[1 0]);
 S6=series(S4,S5);
 
 
-S7=tf([Kd Kp Ki],[1 0]);
+S7=tf([Kd Kp Ki],[1 0]);%C(S)=Kp+Ki/s+KdS
 S8=series(S7,S6);
 
 sys1=feedback(S8,1,-1);

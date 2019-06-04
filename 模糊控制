@@ -1,0 +1,119 @@
+#模糊控制
+clc; clear all; close all;
+
+R=30; 
+L=6e-3; 
+J=40e-6;
+B=35e-6; 
+K=50e-3;
+dt=1e-4;
+Td=0.05;
+i=0;
+I=0;
+W=0;
+V=1;
+TL=0;
+RR=100;
+
+X1=0;
+X2=0;
+X3=0;
+X4=0;
+u=0;
+
+mB=0.029;
+mb=0.334;
+rB=0.0095;
+l=0.4;
+d=0.04;
+JB=1.05e-6;
+Jb=0.0178;
+Kb=Kt=0.1491;
+Ra=18.91;
+n=4.2;
+g=9.8;
+K1=(1+mB^-1*JB*rB^-2)^-1;
+K2=Kb*Kt*l^2*(Ra*d^2)^-1;
+K3=n*Kb*l*(Ra*d)^-1;
+K4=(JB+Jb+mB*X1^2)^-1;
+
+pMF1=[-1 0 1];
+pMF2=[-1 0 1];
+pMFO=[-1 0 1];
+K0=20;
+err_temp=0;
+
+for t=0:dt:Td
+  i=i+1;
+  
+  err=RR-W(i)*30/pi;
+  derr=(err-err_temp)/dt;
+  err_temp=err;
+  
+  in1=err;
+  in2=derr;
+  
+  in1=in1*K1;
+if (in1<=pMF1(1))
+  uMF11=1;
+  uMF12=0;
+  uMF13=0;
+elseif ((pMF1(1)<=in1)&&(in1<pMF1(2)))
+  uMF11=(pMF1(2)-in1)/(pMF1(2)-pMF1(1));
+  uMF12=1-uMF11;
+  uMF13=0;
+elseif ((pMF1(2)<=in1)&&(in1<pMF1(3)))
+  uMF11=0;
+  uMF12=(pMF1(3)-in1)/(pMF1(3)-pMF1(2));
+  uMF13=1-uMF12;
+else
+  uMF11=0;
+  uMF12=0;
+  uMF13=1;
+endif
+
+in2=in2*K2;
+if (in2<=pMF2(1))
+  uMF21=1;
+  uMF22=0;
+  uMF23=0;
+elseif ((pMF2(1)<=in2)&&(in2<pMF2(2)))
+  uMF21=(pMF2(2)-in2)/(pMF2(2)-pMF2(1));
+  uMF22=1-uMF21;
+  uMF23=0;
+elseif ((pMF2(2)<=in2)&&(in2<pMF2(3)))
+  uMF21=0;
+  uMF22=(pMF2(3)-in2)/(pMF2(3)-pMF2(2));
+  uMF23=1-uMF22;
+else
+  uMF21=0;
+  uMF22=0;
+  uMF23=1;
+endif
+
+  uMF11
+  uMF12
+  uMF13
+  uMF21
+  uMF22
+  uMF23
+  
+  uMF01=max([min(uMF11,uMF21),min(uMF12,uMF21),min(uMF11,uMF22)]);
+  uMF02=max([min(uMF13,uMF21),min(uMF12,uMF22),min(uMF11,uMF23)]);
+  uMF03=max([min(uMF13,uMF22),min(uMF12,uMF23),min(uMF13,uMF23)]);
+  
+  Out=(uMF01*pMFO(1)+uMF02*pMFO(2)+uMF03*pMFO(3))/(uMF01+uMF02+uMF03)
+  
+  V=K0*Out;
+  X1(i+1)=X2(i)*dt+X1(i);
+  X2(i+1)=(X1(i)*X4(i)*X4(i)-g*sin(X3(i))*K1)*dt+X2(i);
+  X3(i+1)=X4(i)*dt+X3(i);
+  X4(i+1)=(K4*cos(X3(i))*[K2*X4(i)*cos(l*X3(i)/d)+K3*cos(l*X3(i)/d)*u(i)
+  -0.5*l*mb*g-mB*g*X1]-2*mB*X1(i)*X2(i)*X4(i)*K4)*dt+X4(i);
+endfor
+
+plot(T,X1(1:length(T)));
+%figure
+%plot(T,W(1:length(T))*30/pi);
+xlabel('time(sec)')
+ylabel('Velocity(rad/sec)')

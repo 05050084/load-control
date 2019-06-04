@@ -1,0 +1,80 @@
+clear all;
+close all;
+
+mb=0.029;mB=0.334;
+rB=0.0095;
+l=0.4;
+d=0.04;
+JB=1.05e-6;Jb=0.0178;
+Kb=0.1491;Kt=0.1491;
+Ra=18.91;
+n=4.2;
+g=9.8;
+Td=1;
+dt=1e-3;
+pMF1=[-1 0 1];
+pMF2=[-1 0 1];
+R=1;
+L=0.5;
+J=0.01;
+B=0.1;
+K=0.01;
+dt=1e-3;
+Td=1;
+i=0;
+
+x1=0;%球的位置
+x2=0;%球的速度
+x3=0;%桿子角度
+x4=0%角速度
+
+K1=1+mB^-1*JB*rB^-2;
+K2=Kb*Kt*l^2*(Ra*d^2)^-1;
+K3=n*Kb*l*(Ra*d)^-1;
+K4(x1)=(JB+Jb+mB*x1^2)^-1;
+
+
+
+KP=10;%控制器
+RR=0;%控制器
+in1=-1;
+
+x_1=x2;
+
+
+
+
+for t=0:dt:Td
+ i=i+1;
+ 
+ if(in1<pMF1(1))
+  uMF11=1;
+  uMF12=0;
+  uMF13=0;
+elseif((pMF1(1)<in1)&&(in1<pMF1(2)))
+  uMF11=((pMF(2)-in1)/(pMF1(2)-pMF1(1)));
+  uMF12=1-uMF11;
+  uMF13=0;
+elseif((pMF1(2)<in1)&&(in1<pMF1(3)))
+  uMF11=0;
+  uMF12=((pMF(2)-in1)/(pMF1(2)-pMF1(1)));
+  uMF13=1-uMF11;
+else
+  uMF11=1;
+  uMF12=0;
+  uMF13=0;
+endif
+ 
+ RR(i)=0.1;%控制器
+ T(i)=t;
+ err=RR(i)-W(i);%控制器
+ E(i)=err*KP;%控制器
+ TL(i)=0;
+ 
+ 
+endfor
+
+Len=length(T);
+figure,plot(T,I(1:Len))
+figure,plot(T,W(1:Len))
+figure,plot(T,Q(1:Len))
